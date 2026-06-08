@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meta Ads Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f2f5;--surface:#fff;--surface2:#f8f9fb;--border:#dde0e6;--border2:#c8ccd4;
+  --text:#1c1e21;--text2:#65676b;--text3:#8a8d91;--blue:#1877f2;
+  --green:#1a7f4b;--green-bg:#e6f4ed;--red:#c0392b;--red-bg:#fdecea;
+  --amber:#9a6000;--amber-bg:#fef3d8;
+  --row-even:#f7f8fb;--row-hover:#e8f0fe;
+}
+html,body{height:100%;font-family:'Open Sans',sans-serif;font-size:15px;color:var(--text);background:var(--bg);line-height:1.5}
+/* ── Header ───────────────────────────────────────────────────────────── */
+.app-header{position:sticky;top:0;z-index:200;background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;gap:12px}
+.app-title{font-size:17px;font-weight:600;color:var(--text);letter-spacing:-.2px;white-space:nowrap}
+.app-divider{width:1px;height:16px;background:var(--border);flex-shrink:0}
+.date-range{font-size:13px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 11px;white-space:nowrap}
+.app-updated{font-size:13px;color:var(--text3);white-space:nowrap}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.btn-cf{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:var(--text2);background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;cursor:pointer;white-space:nowrap;transition:background .15s;font-family:'Open Sans',sans-serif}
+.btn-cf:hover{background:var(--surface2);color:var(--text)}
+/* ── Summary bar ──────────────────────────────────────────────────────── */
+.summary-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;gap:0;overflow-x:auto}
+.scard{display:flex;flex-direction:column;min-width:110px;padding:0 22px 0 0;border-right:1px solid var(--border);margin-right:22px;flex-shrink:0}
+.scard:last-child{border-right:none;margin-right:0}
+.scard-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:3px;white-space:nowrap}
+.scard-value{font-size:22px;font-weight:600;color:var(--text);line-height:1.2}
+/* ── Tabs ─────────────────────────────────────────────────────────────── */
+.tab-nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex}
+.tab-btn{padding:0 18px;height:44px;font-size:14px;font-weight:500;color:var(--text2);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s;margin-bottom:-1px;font-family:'Open Sans',sans-serif}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+/* ── Filter bar ───────────────────────────────────────────────────────── */
+.filter-bar{display:flex;align-items:center;gap:8px;padding:10px 24px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.filter-bar.hidden{display:none}
+.filter-chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--blue);background:#e8f0fe;border:1px solid #b6d0fb;border-radius:20px;padding:3px 12px}
+.filter-chip-clear{cursor:pointer;font-size:16px;line-height:1;opacity:.6;margin-left:2px}
+.filter-chip-clear:hover{opacity:1}
+/* ── Main content ─────────────────────────────────────────────────────── */
+.main{padding:18px 24px}
+/* ── Table card ───────────────────────────────────────────────────────── */
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.table-toolbar{display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--border)}
+.toolbar-title{font-size:16px;font-weight:600;color:var(--text)}
+.toolbar-count{font-size:13px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px}
+.toolbar-hint{font-size:12px;color:var(--text3);margin-left:auto}
+.table-wrap{overflow-x:auto}
+/* ── Table base ───────────────────────────────────────────────────────── */
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{position:sticky;top:0;z-index:10;background:var(--surface2);padding:9px 12px;text-align:center;font-size:12px;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+thead th.nosort{cursor:default}
+thead th:not(.nosort):hover{background:#eef0f4;color:var(--text)}
+thead th.sorted-asc::after{content:' ↑';color:var(--blue)}
+thead th.sorted-desc::after{content:' ↓';color:var(--blue)}
+thead th.th-left{text-align:left}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:last-child{border-bottom:none}
+tbody tr:nth-child(even){background:var(--row-even)}
+tbody tr.clickable{cursor:pointer}
+tbody tr.clickable:hover{background:var(--row-hover) !important}
+tbody td{padding:9px 12px;text-align:center;color:var(--text);white-space:nowrap;vertical-align:middle}
+.td-left{text-align:left !important}
+.null-dash{color:var(--border2)}
+/* ── Sticky first column ──────────────────────────────────────────────── */
+thead th:first-child{text-align:left;position:sticky;left:0;z-index:11;background:var(--surface2);padding-left:16px}
+tbody td:first-child{text-align:left;padding-left:16px;font-weight:500;position:sticky;left:0;background:var(--surface);z-index:2}
+tbody tr:nth-child(even) td:first-child{background:var(--row-even)}
+tbody tr.clickable:hover td:first-child{background:var(--row-hover)}
+tbody tr.clickable:hover td:first-child{color:var(--blue)}
+/* ── Sticky second column (adsets) ────────────────────────────────────── */
+.tbl-adsets thead th:nth-child(2){text-align:left;position:sticky;left:180px;z-index:11;background:var(--surface2);border-right:1px solid var(--border)}
+.tbl-adsets tbody td:nth-child(2){text-align:left;position:sticky;left:180px;background:var(--surface);z-index:2;border-right:1px solid var(--border)}
+.tbl-adsets tbody tr:nth-child(even) td:nth-child(2){background:var(--row-even)}
+.tbl-adsets tbody tr.clickable:hover td:nth-child(2){background:var(--row-hover)}
+/* ── Delivery pills ───────────────────────────────────────────────────── */
+.pill-on{display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;padding:3px 11px;border-radius:20px;background:#e6f4ed;color:#1a7f4b;white-space:nowrap;letter-spacing:.02em}
+.pill-off{display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;padding:3px 11px;border-radius:20px;background:#ebebeb;color:#65676b;white-space:nowrap;letter-spacing:.02em}
+/* ── CF chips ─────────────────────────────────────────────────────────── */
+.cf{display:inline-block;font-size:13px;font-weight:600;padding:2px 8px;border-radius:4px}
+.cf-green{background:var(--green-bg);color:var(--green)}
+.cf-amber{background:var(--amber-bg);color:var(--amber)}
+.cf-red{background:var(--red-bg);color:var(--red)}
+/* ── Cell helpers ─────────────────────────────────────────────────────── */
+.cell-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px}
+.thumb{width:36px;height:36px;object-fit:cover;border-radius:5px;border:1px solid var(--border);display:block;cursor:pointer;margin:0 auto}
+.thumb-ph{width:36px;height:36px;border-radius:5px;border:2px dashed var(--border2);display:block;background:var(--surface2);margin:0 auto}
+td.td-thumb{text-align:center;width:56px;min-width:56px}
+td.td-thumb:hover .thumb{border-color:var(--blue);cursor:pointer}
+/* ── Column widths ────────────────────────────────────────────────────── */
+.cw-name{min-width:175px}.cw-del{min-width:78px}.cw-cur{min-width:110px}
+.cw-spend{min-width:130px}.cw-pct{min-width:88px}.cw-int{min-width:100px}
+.cw-bigint{min-width:120px}.cw-roas{min-width:88px}
+/* ── CF Legend ────────────────────────────────────────────────────────── */
+.cf-legend{display:flex;align-items:center;flex-wrap:wrap;gap:4px 14px;padding:9px 18px;background:var(--surface2);border-top:1px solid var(--border);font-size:12px;color:var(--text3)}
+.cf-legend-label{font-weight:600;color:var(--text2);white-space:nowrap}
+.cf-legend-metric{font-weight:600;color:var(--text);margin-right:4px}
+.cf-legend-item{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.cf-legend-sep{color:var(--border2);padding:0 2px}
+.dot-g{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.dot-a{display:inline-block;width:8px;height:8px;border-radius:50%;background:#c07a00;flex-shrink:0}
+.dot-r{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0}
+/* ── Modal ────────────────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55)}
+.modal-overlay.hidden{display:none}
+.modal-box{background:var(--surface);border-radius:12px;max-width:520px;width:calc(100% - 48px);box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;position:relative}
+.modal-close{position:absolute;top:12px;right:14px;font-size:22px;line-height:1;background:none;border:none;cursor:pointer;color:var(--text2);z-index:1}
+.modal-close:hover{color:var(--text)}
+.modal-img-wrap{background:#000;display:flex;align-items:center;justify-content:center;min-height:200px;max-height:480px;overflow:hidden}
+.modal-img-wrap img{max-width:100%;max-height:480px;object-fit:contain;display:block}
+.modal-footer{padding:14px 18px}
+.modal-ad-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+.modal-adset{font-size:13px;color:var(--text2)}
+/* ── Performance Colour Rules panel ──────────────────────────────────── */
+.cf-panel{position:fixed;top:0;right:0;bottom:0;width:340px;background:var(--surface);border-left:1px solid var(--border);z-index:500;display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.08);transition:transform .2s}
+.cf-panel.hidden{transform:translateX(100%)}
+.cf-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.cf-header-title{font-size:15px;font-weight:700;color:var(--text)}
+.cf-close{font-size:22px;line-height:1;background:none;border:none;cursor:pointer;color:var(--text2)}
+.cf-close:hover{color:var(--text)}
+.cf-body{overflow-y:auto;padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:10px}
+.cf-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:13px 14px}
+.cf-card-title{display:flex;align-items:baseline;gap:8px;margin-bottom:11px}
+.cf-metric-name{font-size:14px;font-weight:700;color:var(--text)}
+.cf-dir-badge{font-size:11px;font-weight:500;color:var(--text3);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:1px 8px;white-space:nowrap}
+.cf-row{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:13px;color:var(--text2)}
+.cf-row:last-child{margin-bottom:0}
+.cf-row-icon{font-size:13px;line-height:1;width:20px;text-align:center;flex-shrink:0}
+.cf-row-label{flex:1;white-space:nowrap}
+.cf-input{width:64px;padding:4px 7px;border:1px solid var(--border2);border-radius:6px;font-size:13px;font-family:'Open Sans',sans-serif;color:var(--text);background:var(--surface);text-align:right}
+.cf-input:focus{outline:2px solid var(--blue);outline-offset:0}
+.cf-unit{font-size:13px;color:var(--text3)}
+.cf-note{font-size:11px;color:var(--text3);margin-top:5px;padding-top:5px;border-top:1px solid var(--border)}
+.cf-apply-row{padding:14px 16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+.cf-reset-btn{flex:1;padding:9px;background:var(--surface);color:var(--text2);border:1px solid var(--border2);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Open Sans',sans-serif}
+.cf-reset-btn:hover{background:#eef0f4}
+.cf-apply-btn{flex:2;padding:9px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Open Sans',sans-serif}
+.cf-apply-btn:hover{background:#0d65d9}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="app-header">
+    <div class="app-title">Meta Ads Dashboard</div>
+    <div class="app-divider"></div>
+    <div class="date-range" id="date-range-el">30th May – 8th Jun 2026</div>
+    <div class="app-divider"></div>
+    <div class="app-updated">Updated 8th of June at 12:48pm (NZST)</div>
+    <div class="header-actions">
+      <button class="btn-cf" id="cf-btn">&#9881; Performance Colour Rules</button>
+    </div>
+  </div>
+  <div class="summary-bar" id="summary-bar"></div>
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="campaigns">Campaigns</button>
+    <button class="tab-btn" data-tab="adsets">Ad Sets</button>
+    <button class="tab-btn" data-tab="ads">Ads</button>
+    <button class="tab-btn" data-tab="creatives">Creatives</button>
+  </div>
+  <div class="filter-bar hidden" id="filter-bar">
+    <span class="filter-chip" id="filter-chip-label"></span>
+    <span style="font-size:12px;color:var(--text3);cursor:pointer" id="clear-filter">&#10005; Clear filter</span>
+  </div>
+  <div class="main"><div id="table-area"></div></div>
+</div>
+
+<!-- Creative modal -->
+<div id="modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <button class="modal-close" id="modal-close-btn">&times;</button>
+    <div class="modal-img-wrap"><img id="modal-img" src="" alt=""></div>
+    <div class="modal-footer">
+      <div class="modal-ad-name" id="modal-ad-name"></div>
+      <div class="modal-adset" id="modal-adset"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Performance Colour Rules panel -->
+<div id="cf-panel" class="cf-panel hidden">
+  <div class="cf-header">
+    <span class="cf-header-title">Performance Colour Rules</span>
+    <button class="cf-close" id="cf-close-btn">&times;</button>
+  </div>
+  <div class="cf-body">
+    <div class="cf-card">
+      <div class="cf-card-title">
+        <span class="cf-metric-name">CPM</span>
+        <span class="cf-dir-badge">lower is better</span>
+      </div>
+      <div class="cf-row">
+        <span class="cf-row-icon">&#x1F7E2;</span>
+        <span class="cf-row-label">Green &mdash; below</span>
+        <span class="cf-unit">$</span><input class="cf-input" id="cf-cpm-lo">
+      </div>
+      <div class="cf-row">
+        <span class="cf-row-icon">&#x1F7E1;</span>
+        <span class="cf-row-label">Orange &mdash; up to</span>
+        <span class="cf-unit">$</span><input class="cf-input" id="cf-cpm-hi">
+      </div>
+      <div class="cf-row">
+        <span class="cf-row-icon">&#x1F534;</span>
+        <span class="cf-row-label" style="color:var(--text3);font-size:12px">Red &mdash; above orange threshold</span>
+      </div>
+    </div>
+    <div class="cf-card">
+      <div class="cf-card-title">
+        <span class="cf-metric-name">CTR</span>
+        <span class="cf-dir-badge">higher is better</span>
+      </div>
+      <div class="cf-row">
+        <span class="cf-row-icon">&#x1F534;</span>
+        <span class="cf-row-label">Red &mdash; below</span>
+        <input class="cf-input" id="cf-ctr-lo"><span class="cf-unit">%</span>
+      </div>
+      <div class="cf-row">
+        <span class="cf-row-icon">&#x1F7E2;</span>
+        <span class="cf-row-label">Green &mdash; above</span>
+        <input class="cf-input" id="cf-ctr-hi"><span class="cf-unit">%</span>
+      </div>
+      <div class="cf-row">
+        <span class="cf-row-icon">&#x1F7E1;</span>
+        <span class="cf-row-label" style="color:var(--text3);font-size:12px">Orange &mdash; between thresholds</span>
+      </div>
+    </div>
+    <div class="cf-card">
+      <div class="cf-card-title">
+        <span class="cf-metric-name">CPC</span>
+        <span class="cf-dir-badge">lower is better</span>
+      </div>
+      <div class="cf-row">
+        <span class="cf-row-icon">&#x1F7E2;</span>
+        <span class="cf-row-label">Green &mdash; below</span>
+        <span class="cf-unit">$</span><input class="cf-input" id="cf-cpc-lo">
+      </div>
+      <div class="cf-row">
+        <span class="cf-row-icon">&#x1F7E1;</span>
+        <span class="cf-row-label">Orange &mdash; up to</span>
+        <span class="cf-unit">$</span><input class="cf-input" id="cf-cpc-hi">
+      </div>
+      <div class="cf-row">
+        <span class="cf-row-icon">&#x1F534;</span>
+        <span class="cf-row-label" style="color:var(--text3);font-size:12px">Red &mdash; above orange threshold</span>
+      </div>
+    </div>
+    <div class="cf-card">
+      <div class="cf-card-title">
+        <span class="cf-metric-name">ROAS</span>
+        <span class="cf-dir-badge">higher is better</span>
+      </div>
+      <div class="cf-row">
+        <span class="cf-row-icon">&#x1F534;</span>
+        <span class="cf-row-label">Red &mdash; below</span>
+        <input class="cf-input" id="cf-roas-be">
+      </div>
+      <div class="cf-row">
+        <span class="cf-row-icon">&#x1F7E2;</span>
+        <span class="cf-row-label">Green &mdash; above</span>
+        <input class="cf-input" id="cf-roas-green">
+      </div>
+      <div class="cf-row">
+        <span class="cf-row-icon">&#x1F7E1;</span>
+        <span class="cf-row-label" style="color:var(--text3);font-size:12px">Orange &mdash; between thresholds</span>
+      </div>
+    </div>
+  </div>
+  <div class="cf-apply-row">
+    <button class="cf-reset-btn" id="cf-reset-btn">Reset defaults</button>
+    <button class="cf-apply-btn" id="cf-apply-btn">Apply changes</button>
+  </div>
+</div>
+
+<script>
+var RAW = [
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Features",adset:"Minimalism - 1865/MF/ANZ",delivery:"not_delivering",cpm:58.641975,spend:4.75,ctr:8.641975,video_playtime:"00:00:00",clicks:7.0,atc:null,checkouts:null,cpc:0.678571,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:81.0,reach:72.0,frequency:1.125,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Before & After",adset:"Board Games - 1865/MF/ANZ",delivery:"active",cpm:40.26178,spend:7.69,ctr:2.617801,video_playtime:"00:00:00",clicks:5.0,atc:null,checkouts:null,cpc:1.538,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:191.0,reach:166.0,frequency:1.150602,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Offer",adset:"Board Games - 1865/MF/ANZ",delivery:"active",cpm:29.178082,spend:2.13,ctr:2.739726,video_playtime:"00:00:00",clicks:2.0,atc:null,checkouts:null,cpc:1.065,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:73.0,reach:60.0,frequency:1.216667,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Features",adset:"Reading - 1865/MF/ANZ",delivery:"active",cpm:40.0,spend:2.32,ctr:6.896552,video_playtime:"00:00:00",clicks:4.0,atc:null,checkouts:null,cpc:0.58,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:58.0,reach:58.0,frequency:1.0,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Offer",adset:"Reading - 1865/MF/ANZ",delivery:"active",cpm:25.824176,spend:2.35,ctr:null,video_playtime:"00:00:00",clicks:null,atc:1.0,checkouts:1.0,cpc:null,cost_atc:2.35,cost_checkout:2.35,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:91.0,reach:80.0,frequency:1.1375,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Offer",adset:"Tabletop games - 1865/MF/ANZ",delivery:"active",cpm:29.838188,spend:9.22,ctr:2.912621,video_playtime:"00:00:00",clicks:9.0,atc:null,checkouts:null,cpc:1.024444,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:309.0,reach:248.0,frequency:1.245968,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Review",adset:"Minimalism - 1865/MF/ANZ",delivery:"not_delivering",cpm:45.094563,spend:38.15,ctr:2.48227,video_playtime:"00:00:00",clicks:21.0,atc:null,checkouts:null,cpc:1.816667,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:846.0,reach:776.0,frequency:1.090206,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Features",adset:"Tabletop games - 1865/MF/ANZ",delivery:"active",cpm:34.605263,spend:2.63,ctr:3.947368,video_playtime:"00:00:00",clicks:3.0,atc:null,checkouts:null,cpc:0.876667,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:76.0,reach:69.0,frequency:1.101449,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Comparison",adset:"Tabletop games - 1865/MF/ANZ",delivery:"active",cpm:33.018868,spend:7.0,ctr:3.301887,video_playtime:"00:00:00",clicks:7.0,atc:null,checkouts:null,cpc:1.0,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:212.0,reach:174.0,frequency:1.218391,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Offer",adset:"Minimalism - 1865/MF/ANZ",delivery:"not_delivering",cpm:40.098522,spend:8.14,ctr:2.463054,video_playtime:"00:00:00",clicks:5.0,atc:null,checkouts:null,cpc:1.628,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:203.0,reach:182.0,frequency:1.115385,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Review",adset:"Board Games - 1865/MF/ANZ",delivery:"active",cpm:49.839572,spend:9.32,ctr:4.278075,video_playtime:"00:00:00",clicks:8.0,atc:null,checkouts:null,cpc:1.165,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:187.0,reach:171.0,frequency:1.093567,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Comparison",adset:"Minimalism - 1865/MF/ANZ",delivery:"not_delivering",cpm:34.802198,spend:31.67,ctr:1.758242,video_playtime:"00:00:00",clicks:16.0,atc:null,checkouts:null,cpc:1.979375,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:910.0,reach:668.0,frequency:1.362275,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Features",adset:"Board Games - 1865/MF/ANZ",delivery:"active",cpm:48.142857,spend:3.37,ctr:1.428571,video_playtime:"00:00:00",clicks:1.0,atc:null,checkouts:null,cpc:3.37,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:70.0,reach:65.0,frequency:1.076923,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Review",adset:"Reading - 1865/MF/ANZ",delivery:"active",cpm:33.586207,spend:4.87,ctr:4.137931,video_playtime:"00:00:00",clicks:6.0,atc:null,checkouts:null,cpc:0.811667,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:145.0,reach:130.0,frequency:1.115385,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Comparison",adset:"Reading - 1865/MF/ANZ",delivery:"active",cpm:31.387782,spend:47.27,ctr:2.722444,video_playtime:"00:00:00",clicks:41.0,atc:1.0,checkouts:null,cpc:1.152927,cost_atc:47.27,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:1506.0,reach:1200.0,frequency:1.255,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Review",adset:"Tabletop games - 1865/MF/ANZ",delivery:"active",cpm:30.776442,spend:256.06,ctr:2.836538,video_playtime:"00:00:00",clicks:236.0,atc:15.0,checkouts:8.0,cpc:1.085,cost_atc:17.070667,cost_checkout:32.0075,cost_per_result:42.676667,result_indicator:"Purchase",roas:3.767828,results:6.0,conv_value:964.79,impressions:8320.0,reach:6096.0,frequency:1.364829,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Before & After",adset:"Minimalism - 1865/MF/ANZ",delivery:"not_delivering",cpm:49.661017,spend:2.93,ctr:3.389831,video_playtime:"00:00:00",clicks:2.0,atc:null,checkouts:null,cpc:1.465,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:59.0,reach:52.0,frequency:1.134615,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Comparison",adset:"Board Games - 1865/MF/ANZ",delivery:"active",cpm:31.834101,spend:34.54,ctr:3.041475,video_playtime:"00:00:00",clicks:33.0,atc:1.0,checkouts:null,cpc:1.046667,cost_atc:34.54,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:1085.0,reach:806.0,frequency:1.346154,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Before & After",adset:"Tabletop games - 1865/MF/ANZ",delivery:"active",cpm:71.818182,spend:3.95,ctr:7.272727,video_playtime:"00:00:00",clicks:4.0,atc:null,checkouts:null,cpc:0.9875,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:55.0,reach:49.0,frequency:1.122449,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Before & After",adset:"Reading - 1865/MF/ANZ",delivery:"active",cpm:64.666667,spend:0.97,ctr:6.666667,video_playtime:"00:00:00",clicks:1.0,atc:null,checkouts:null,cpc:0.97,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:15.0,reach:15.0,frequency:1.0,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Before & After - Lost Pieces",adset:"Week 1 - Before & After",delivery:"active",cpm:31.372549,spend:1.6,ctr:null,video_playtime:"00:00:00",clicks:null,atc:null,checkouts:null,cpc:null,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:51.0,reach:47.0,frequency:1.085106,campaign:"[P] ABO - Creative Testing"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Before & After - Cats",adset:"Week 1 - Before & After",delivery:"active",cpm:24.752475,spend:5.0,ctr:0.49505,video_playtime:"00:00:00",clicks:1.0,atc:null,checkouts:null,cpc:5.0,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:202.0,reach:181.0,frequency:1.116022,campaign:"[P] ABO - Creative Testing"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Before & After - Dining Table",adset:"Week 1 - Before & After",delivery:"active",cpm:31.789544,spend:142.29,ctr:2.144772,video_playtime:"00:00:00",clicks:96.0,atc:4.0,checkouts:6.0,cpc:1.482188,cost_atc:35.5725,cost_checkout:23.715,cost_per_result:47.43,result_indicator:"Purchase",roas:2.74067,results:3.0,conv_value:389.97,impressions:4476.0,reach:3796.0,frequency:1.179136,campaign:"[P] ABO - Creative Testing"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Before & After - Dogs",adset:"Week 1 - Before & After",delivery:"active",cpm:33.373494,spend:2.77,ctr:2.409639,video_playtime:"00:00:00",clicks:2.0,atc:null,checkouts:null,cpc:1.385,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:83.0,reach:70.0,frequency:1.185714,campaign:"[P] ABO - Creative Testing"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Before & After - Moving House",adset:"Week 1 - Before & After",delivery:"active",cpm:33.559823,spend:22.72,ctr:2.215657,video_playtime:"00:00:00",clicks:15.0,atc:1.0,checkouts:2.0,cpc:1.514667,cost_atc:22.72,cost_checkout:11.36,cost_per_result:22.72,result_indicator:"Purchase",roas:5.721391,results:1.0,conv_value:129.99,impressions:677.0,reach:531.0,frequency:1.274953,campaign:"[P] ABO - Creative Testing"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Before & After",adset:"Jigsaw Puzzles - 1865/MF/ANZ",delivery:"active",cpm:40.994937,spend:161.93,ctr:2.962025,video_playtime:"00:00:00",clicks:117.0,atc:5.0,checkouts:4.0,cpc:1.384017,cost_atc:32.386,cost_checkout:40.4825,cost_per_result:80.965,result_indicator:"Purchase",roas:1.790774,results:2.0,conv_value:289.98,impressions:3950.0,reach:2723.0,frequency:1.450606,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Offer",adset:"Jigsaw Puzzles - 1865/MF/ANZ",delivery:"active",cpm:23.785311,spend:4.21,ctr:1.129944,video_playtime:"00:00:00",clicks:2.0,atc:1.0,checkouts:null,cpc:2.105,cost_atc:4.21,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:177.0,reach:149.0,frequency:1.187919,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Features",adset:"Jigsaw Puzzles - 1865/MF/ANZ",delivery:"active",cpm:40.359712,spend:5.61,ctr:3.597122,video_playtime:"00:00:00",clicks:5.0,atc:null,checkouts:null,cpc:1.122,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:139.0,reach:126.0,frequency:1.103175,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Comparison",adset:"Jigsaw Puzzles - 1865/MF/ANZ",delivery:"active",cpm:43.772727,spend:9.63,ctr:5.0,video_playtime:"00:00:00",clicks:11.0,atc:null,checkouts:null,cpc:0.875455,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:220.0,reach:194.0,frequency:1.134021,campaign:"[P] CBO - Cold Interest Targeting"},
+  {date_start:"2026-05-30",date_end:"2026-06-08",ad:"Static - Review",adset:"Jigsaw Puzzles - 1865/MF/ANZ",delivery:"active",cpm:40.462428,spend:7.0,ctr:2.312139,video_playtime:"00:00:00",clicks:4.0,atc:1.0,checkouts:3.0,cpc:1.75,cost_atc:7.0,cost_checkout:2.333333,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:173.0,reach:153.0,frequency:1.130719,campaign:"[P] CBO - Cold Interest Targeting"}
+];
+var CREATIVE_IMAGES = {"Static - Before & After": "https://cdn.shopify.com/s/files/1/1016/4224/0368/files/Before_After_v1.png?v=1780561086", "Static - Comparison": "https://cdn.shopify.com/s/files/1/1016/4224/0368/files/Comparison.png?v=1780561085", "Static - Review": "https://cdn.shopify.com/s/files/1/1016/4224/0368/files/Review_v2.png?v=1780561085", "Static - Offer": "https://cdn.shopify.com/s/files/1/1016/4224/0368/files/Offer_v1.png?v=1780561085", "Static - Features": "https://cdn.shopify.com/s/files/1/1016/4224/0368/files/Features.png?v=1780561084", "Before & After - Cats": "https://cdn.shopify.com/s/files/1/0822/8398/7158/files/Before_After_-_Cats.png?v=1780869596", "Before & After - Dining Table": "https://cdn.shopify.com/s/files/1/0822/8398/7158/files/Before_After_-_Dinning_Table.png?v=1780869597", "Before & After - Dogs": "https://cdn.shopify.com/s/files/1/0822/8398/7158/files/Before_After_-_Dogs.png?v=1780869597", "Before & After - Lost Pieces": "https://cdn.shopify.com/s/files/1/0822/8398/7158/files/Before_After_-_Lost_Pieces.png?v=1780869597", "Before & After - Moving House": "https://cdn.shopify.com/s/files/1/0822/8398/7158/files/Before_After_-_Moving.png?v=1780869596"};
+var UPDATED_UTC = "2026-06-08T00:48:58Z";
+
+/* ── CF defaults ─────────────────────────────────────────────────────── */
+var CF_DEFAULTS = {
+  cpm:  { lo: 30,   hi: 40,   lowerIsBetter: true  },
+  ctr:  { lo: 1.5,  hi: 2.5,  lowerIsBetter: false },
+  cpc:  { lo: 1.80, hi: 2.40, lowerIsBetter: true  },
+  roas: { breakEven: 1.60, greenOffset: 0.80 }
+};
+var CF = {
+  cpm:  { lo: 30,   hi: 40,   lowerIsBetter: true  },
+  ctr:  { lo: 1.5,  hi: 2.5,  lowerIsBetter: false },
+  cpc:  { lo: 1.80, hi: 2.40, lowerIsBetter: true  },
+  roas: { breakEven: 1.60, greenOffset: 0.80 }
+};
+
+/* ── App state ───────────────────────────────────────────────────────── */
+var currentTab     = 'campaigns';
+var filterCampaign = null;
+var filterAdset    = null;
+var sortState = {
+  campaigns: { key: 'spend', dir: -1 },
+  adsets:    { key: 'spend', dir: -1 },
+  ads:       { key: 'spend', dir: -1 },
+  creatives: { key: 'spend', dir: -1 }
+};
+
+/* ── Column definitions ──────────────────────────────────────────────── */
+var METRIC_COLS = [
+  { k:'spend',           label:'Amount Spent',         type:'cur',    cls:'cw-spend',  cf:null   },
+  { k:'cpm',             label:'CPM',                  type:'cur',    cls:'cw-cur',    cf:'cpm'  },
+  { k:'ctr',             label:'CTR',                  type:'pct',    cls:'cw-pct',    cf:'ctr'  },
+  { k:'cpc',             label:'CPC',                  type:'cur',    cls:'cw-cur',    cf:'cpc'  },
+  { k:'roas',            label:'ROAS',                 type:'dec2',   cls:'cw-roas',   cf:'roas' },
+  { k:'conv_value',      label:'Purchase Conv. Value', type:'cur',    cls:'cw-spend',  cf:null   },
+  { k:'clicks',          label:'Outbound Clicks',      type:'int',    cls:'cw-int',    cf:null   },
+  { k:'atc',             label:'Adds to Cart',         type:'int',    cls:'cw-int',    cf:null   },
+  { k:'checkouts',       label:'Checkouts Initiated',  type:'int',    cls:'cw-int',    cf:null   },
+  { k:'results',         label:'Results',              type:'int',    cls:'cw-int',    cf:null   },
+  { k:'cost_atc',        label:'Cost per Add to Cart', type:'cur',    cls:'cw-cur',    cf:null   },
+  { k:'cost_checkout',   label:'Cost per Checkout',    type:'cur',    cls:'cw-cur',    cf:null   },
+  { k:'cost_per_result', label:'Cost per Result',      type:'cur',    cls:'cw-cur',    cf:null   },
+  { k:'impressions',     label:'Impressions',          type:'bigint', cls:'cw-bigint', cf:null   },
+  { k:'reach',           label:'Reach',                type:'bigint', cls:'cw-bigint', cf:null   },
+  { k:'frequency',       label:'Frequency',            type:'dec2',   cls:'cw-roas',   cf:null   },
+];
+
+var CAMPAIGN_COLS = [
+  { k:'campaign', label:'Campaign Name', type:'name', cls:'cw-name', sticky:true },
+  { k:'delivery', label:'Delivery',      type:'del',  cls:'cw-del'              },
+].concat(METRIC_COLS);
+
+var ADSET_COLS = [
+  { k:'campaign', label:'Campaign', type:'name', cls:'cw-name', sticky:true  },
+  { k:'adset',    label:'Ad Set',   type:'name', cls:'cw-name', sticky2:true },
+  { k:'delivery', label:'Delivery', type:'del',  cls:'cw-del'                },
+].concat(METRIC_COLS);
+
+var ADS_COLS = [
+  { k:'campaign', label:'Campaign', type:'name',  cls:'cw-name', sticky:true },
+  { k:'adset',    label:'Ad Set',   type:'name',  cls:'cw-name'              },
+  { k:'ad',       label:'Ad Name',  type:'name',  cls:'cw-name'              },
+  { k:'creative', label:'Creative', type:'thumb', cls:'',        nosort:true  },
+  { k:'delivery', label:'Delivery', type:'del',   cls:'cw-del'               },
+].concat(METRIC_COLS);
+
+var CREATIVES_COLS = [
+  { k:'ad',       label:'Ad Name',  type:'name',  cls:'cw-name', sticky:true },
+  { k:'creative', label:'Creative', type:'thumb', cls:'',        nosort:true  },
+  { k:'delivery', label:'Delivery', type:'del',   cls:'cw-del'               },
+].concat(METRIC_COLS);
+
+/* ── Utilities ───────────────────────────────────────────────────────── */
+function pad2(n) { return String(Math.floor(n)).padStart(2,'0'); }
+function sumF(rows, key) {
+  var total = 0, any = false;
+  for (var i = 0; i < rows.length; i++) {
+    var v = rows[i][key];
+    if (v !== null && v !== undefined && !isNaN(v)) { total += v; any = true; }
+  }
+  return any ? total : null;
+}
+function fmtCur(v) {
+  if (v === null || v === undefined) return '—';
+  return '$' + Number(v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function fmtPct(v) {
+  if (v === null || v === undefined) return '—';
+  return Number(v).toFixed(2) + '%';
+}
+function fmtInt(v) {
+  if (v === null || v === undefined) return '—';
+  return Math.round(v).toLocaleString();
+}
+function fmtDec2(v) {
+  if (v === null || v === undefined) return '—';
+  return Number(v).toFixed(2);
+}
+function parsePlaytime(s) {
+  if (!s || s === '-' || s === '—') return null;
+  s = String(s).trim();
+  var parts = s.split(':');
+  if (parts.length === 3) return parseInt(parts[0])*3600 + parseInt(parts[1])*60 + parseFloat(parts[2]);
+  if (parts.length === 2) return parseInt(parts[0])*60 + parseFloat(parts[1]);
+  return parseFloat(s) || null;
+}
+function weightedAvgPlaytime(rows) {
+  var num = 0, den = 0;
+  for (var i = 0; i < rows.length; i++) {
+    var secs = parsePlaytime(rows[i].video_playtime);
+    var imp  = rows[i].impressions;
+    if (secs !== null && imp !== null && imp > 0) { num += secs * imp; den += imp; }
+  }
+  return den > 0 ? num / den : null;
+}
+function esc(s) {
+  return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
+}
+function normalizeDelivery(d) {
+  if (!d) return '';
+  return d.toLowerCase().replace(/_/g,' ').trim();
+}
+function fmtDelivery(d) {
+  if (!d) return '<span class="pill-off">OFF</span>';
+  var n = normalizeDelivery(d);
+  if (n === 'active') return '<span class="pill-on">ON</span>';
+  if (n === 'not delivering') return '<span class="pill-off">OFF</span>';
+  if (d.indexOf('/') !== -1 && d.toLowerCase().indexOf('active') !== -1) {
+    return '<span class="pill-on" title="' + esc(d) + '">ON</span>';
+  }
+  return '<span class="pill-off">OFF</span>';
+}
+
+/* ── CF helpers ──────────────────────────────────────────────────────── */
+function cfClass(metric, val) {
+  if (val === null || val === undefined) return '';
+  var s = CF[metric];
+  if (!s) return '';
+  if (metric === 'roas') {
+    if (val < s.breakEven) return 'cf-red';
+    if (val <= s.breakEven + s.greenOffset) return 'cf-amber';
+    return 'cf-green';
+  }
+  if (s.lowerIsBetter) {
+    if (val < s.lo) return 'cf-green';
+    if (val < s.hi) return 'cf-amber';
+    return 'cf-red';
+  } else {
+    if (val < s.lo) return 'cf-red';
+    if (val < s.hi) return 'cf-amber';
+    return 'cf-green';
+  }
+}
+function cfCell(metric, val, fmtted) {
+  if (fmtted === '—') return '<td class="null-dash">—</td>';
+  var cls = cfClass(metric, val);
+  if (cls) return '<td><span class="cf ' + cls + '">' + fmtted + '</span></td>';
+  return '<td>' + fmtted + '</td>';
+}
+
+/* ── Aggregation ─────────────────────────────────────────────────────── */
+function aggregate(rows) {
+  var spend      = sumF(rows,'spend');
+  var clicks     = sumF(rows,'clicks');
+  var atc        = sumF(rows,'atc');
+  var checkouts  = sumF(rows,'checkouts');
+  var results    = sumF(rows,'results');
+  var conv_value = sumF(rows,'conv_value');
+  var impressions= sumF(rows,'impressions');
+  var reach      = sumF(rows,'reach');
+  return {
+    spend:spend, clicks:clicks, atc:atc, checkouts:checkouts,
+    results:results, conv_value:conv_value, impressions:impressions, reach:reach,
+    cpm:           (impressions && spend !== null)    ? spend / impressions * 1000 : null,
+    ctr:           (impressions && clicks !== null)   ? clicks / impressions * 100  : null,
+    cpc:           (clicks && spend !== null)         ? spend / clicks               : null,
+    cost_atc:      (atc && spend !== null)            ? spend / atc                  : null,
+    cost_checkout: (checkouts && spend !== null)      ? spend / checkouts            : null,
+    cost_per_result:(results && spend !== null)       ? spend / results              : null,
+    roas:          (spend && conv_value !== null)     ? conv_value / spend           : null,
+    frequency:     (reach && impressions !== null)    ? impressions / reach          : null,
+    _playtime_secs: weightedAvgPlaytime(rows),
+  };
+}
+function computeDelivery(rows) {
+  if (!rows.length) return null;
+  var total = rows.length, active = 0;
+  for (var i = 0; i < rows.length; i++) {
+    if (normalizeDelivery(rows[i].delivery) === 'active') active++;
+  }
+  if (active === total) return 'Active';
+  if (active === 0)     return 'Not delivering';
+  return active + '/' + total + ' Active';
+}
+
+/* ── Data builders ───────────────────────────────────────────────────── */
+function buildCampaignRows() {
+  var map = {}, order = [];
+  RAW.forEach(function(r) {
+    var k = r.campaign || 'Unknown Campaign';
+    if (!map[k]) { map[k] = []; order.push(k); }
+    map[k].push(r);
+  });
+  return order.map(function(k) {
+    var rows = map[k];
+    var agg  = aggregate(rows);
+    agg.campaign = k;
+    agg.delivery = computeDelivery(rows);
+    agg._rows    = rows;
+    return agg;
+  });
+}
+function buildAdsetRows(campFilter) {
+  var src = campFilter ? RAW.filter(function(r){ return r.campaign === campFilter; }) : RAW;
+  var map = {}, order = [];
+  src.forEach(function(r) {
+    var k = (r.campaign||'') + '|||' + (r.adset||'');
+    if (!map[k]) { map[k] = { camp: r.campaign||'Unknown', adset: r.adset||'Unknown', rows: [] }; order.push(k); }
+    map[k].rows.push(r);
+  });
+  return order.map(function(k) {
+    var e   = map[k];
+    var agg = aggregate(e.rows);
+    agg.campaign = e.camp;
+    agg.adset    = e.adset;
+    agg.delivery = computeDelivery(e.rows);
+    agg._rows    = e.rows;
+    return agg;
+  });
+}
+function buildAdsRows(campFilter, adsetFilter) {
+  var src = RAW;
+  if (campFilter)  src = src.filter(function(r){ return r.campaign === campFilter; });
+  if (adsetFilter) src = src.filter(function(r){ return r.adset    === adsetFilter; });
+  return src.map(function(r) {
+    var row = Object.assign({}, r);
+    row._playtime_secs = parsePlaytime(r.video_playtime);
+    return row;
+  });
+}
+function buildCreativeRows() {
+  var map = {}, order = [];
+  RAW.forEach(function(r) {
+    var k = r.ad || 'Unknown Ad';
+    if (!map[k]) { map[k] = []; order.push(k); }
+    map[k].push(r);
+  });
+  return order.map(function(k) {
+    var rows = map[k];
+    var agg  = aggregate(rows);
+    agg.ad       = k;
+    agg.delivery = computeDelivery(rows);
+    agg._rows    = rows;
+    return agg;
+  });
+}
+
+/* ── Sorting ─────────────────────────────────────────────────────────── */
+function getSortVal(row, key) {
+  if (key === 'video_playtime') {
+    return row._playtime_secs !== undefined ? row._playtime_secs : parsePlaytime(row.video_playtime);
+  }
+  if (key === 'delivery') {
+    var d = row.delivery;
+    if (!d) return null;
+    var n = normalizeDelivery(d);
+    if (n === 'active') return 2;
+    if (d.indexOf('/') !== -1) return 1;
+    return 0;
+  }
+  var v = row[key];
+  if (v === null || v === undefined) return null;
+  return v;
+}
+function sortRows(rows, key, dir) {
+  return rows.slice().sort(function(a, b) {
+    var av = getSortVal(a, key), bv = getSortVal(b, key);
+    if (av === null && bv === null) return 0;
+    if (av === null) return 1;
+    if (bv === null) return -1;
+    if (typeof av === 'string') return av.localeCompare(bv) * dir;
+    return (av - bv) * dir;
+  });
+}
+
+/* ── Cell builder ────────────────────────────────────────────────────── */
+function buildCell(col, row) {
+  var k = col.k, v = row[k];
+  switch (col.type) {
+    case 'name': {
+      var nm = v || '—';
+      return '<td class="td-left" title="' + esc(nm) + '"><span class="cell-name">' + esc(nm) + '</span></td>';
+    }
+    case 'del':
+      return '<td>' + fmtDelivery(v) + '</td>';
+    case 'thumb': {
+      var url = CREATIVE_IMAGES[row.ad];
+      if (url) {
+        return '<td class="td-thumb" data-modal="' + esc(row.ad) + '" data-adset="' + esc(row.adset||'') + '">' +
+          '<img class="thumb" src="' + esc(url) + '" loading="lazy" alt=""></td>';
+      }
+      return '<td class="td-thumb"><span class="thumb-ph"></span></td>';
+    }
+    case 'cur': {
+      var fmtted = fmtCur(v);
+      return col.cf ? cfCell(col.cf, v, fmtted) : '<td>' + fmtted + '</td>';
+    }
+    case 'pct': {
+      var fmtted2 = fmtPct(v);
+      return col.cf ? cfCell(col.cf, v, fmtted2) : '<td>' + fmtted2 + '</td>';
+    }
+    case 'int':
+      return (v === null || v === undefined) ? '<td class="null-dash">—</td>' : '<td>' + fmtInt(v) + '</td>';
+    case 'bigint':
+      return (v === null || v === undefined) ? '<td class="null-dash">—</td>' : '<td>' + fmtInt(v) + '</td>';
+    case 'dec2': {
+      var fmtted3 = fmtDec2(v);
+      return col.cf ? cfCell(col.cf, v, fmtted3) : '<td>' + fmtted3 + '</td>';
+    }
+    default:
+      return '<td>' + esc(String(v||'—')) + '</td>';
+  }
+}
+
+/* ── CF legend ───────────────────────────────────────────────────────── */
+function renderLegend() {
+  var r = CF.roas;
+  var roasGreen = (r.breakEven + r.greenOffset).toFixed(2);
+  var roasRed   = r.breakEven.toFixed(2);
+  function g(cls, text) { return '<span class="' + cls + '"></span> ' + text; }
+  var items = [
+    ['CPM',  g('dot-g','&lt;$'+CF.cpm.lo) + ' &ensp;' + g('dot-a','$'+CF.cpm.lo+'&ndash;'+CF.cpm.hi) + ' &ensp;' + g('dot-r','&gt;$'+CF.cpm.hi)],
+    ['CTR',  g('dot-r','&lt;'+CF.ctr.lo+'%') + ' &ensp;' + g('dot-a',CF.ctr.lo+'&ndash;'+CF.ctr.hi+'%') + ' &ensp;' + g('dot-g','&gt;'+CF.ctr.hi+'%')],
+    ['CPC',  g('dot-g','&lt;$'+CF.cpc.lo) + ' &ensp;' + g('dot-a','$'+CF.cpc.lo+'&ndash;'+CF.cpc.hi) + ' &ensp;' + g('dot-r','&gt;$'+CF.cpc.hi)],
+    ['ROAS', g('dot-r','&lt;'+roasRed) + ' &ensp;' + g('dot-a',roasRed+'&ndash;'+roasGreen) + ' &ensp;' + g('dot-g','&gt;'+roasGreen)],
+  ];
+  var html = '<div class="cf-legend"><span class="cf-legend-label">Colour guide</span>';
+  items.forEach(function(item) {
+    html += '<span class="cf-legend-sep">|</span><span class="cf-legend-item"><span class="cf-legend-metric">' + item[0] + '</span>' + item[1] + '</span>';
+  });
+  return html + '</div>';
+}
+
+/* ── Table builder ───────────────────────────────────────────────────── */
+function buildTable(cols, rows, tab, opts) {
+  opts = opts || {};
+  var ss = sortState[tab];
+  var tblClass = 'tbl' + (tab === 'adsets' ? ' tbl-adsets' : '');
+
+  var html = '<div class="table-wrap"><table class="' + tblClass + '"><thead><tr>';
+  cols.forEach(function(col) {
+    var cls = [];
+    if (col.cls) cls.push(col.cls);
+    if (col.nosort) cls.push('nosort');
+    if (!col.nosort && ss.key === col.k) cls.push(ss.dir === 1 ? 'sorted-asc' : 'sorted-desc');
+    if (col.type === 'name') cls.push('th-left');
+    var sortAttr = col.nosort ? '' : ' data-sortkey="' + col.k + '" data-sorttab="' + tab + '"';
+    html += '<th class="' + cls.join(' ') + '"' + sortAttr + '>' + esc(col.label) + '</th>';
+  });
+  html += '</tr></thead><tbody>';
+
+  if (!rows.length) {
+    html += '<tr><td colspan="' + cols.length + '" style="text-align:center;padding:32px;color:var(--text3)">No data</td></tr>';
+  }
+  rows.forEach(function(row) {
+    var rowAttrs = '';
+    if (opts.drilldown === 'campaign' && row.campaign) {
+      rowAttrs = ' class="clickable" data-drill="adsets" data-camp="' + esc(row.campaign) + '"';
+    } else if (opts.drilldown === 'adset' && row.adset) {
+      rowAttrs = ' class="clickable" data-drill="ads" data-camp="' + esc(row.campaign||'') + '" data-adset="' + esc(row.adset) + '"';
+    } else if (opts.modal && row[opts.modal] && CREATIVE_IMAGES[row[opts.modal]]) {
+      rowAttrs = ' class="clickable" data-modal="' + esc(row[opts.modal]) + '"';
+    }
+    html += '<tr' + rowAttrs + '>';
+    cols.forEach(function(col) { html += buildCell(col, row); });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  html += renderLegend();
+  return html;
+}
+
+/* ── Summary bar ─────────────────────────────────────────────────────── */
+function renderSummary() {
+  var agg = aggregate(RAW);
+  var cards = [
+    { label:'Total Spent',     val: fmtCur(agg.spend),      cf: null         },
+    { label:'CPM',             val: fmtCur(agg.cpm),        cf: 'cpm',  raw: agg.cpm  },
+    { label:'CTR',             val: fmtPct(agg.ctr),        cf: 'ctr',  raw: agg.ctr  },
+    { label:'CPC',             val: fmtCur(agg.cpc),        cf: 'cpc',  raw: agg.cpc  },
+    { label:'ROAS',            val: fmtDec2(agg.roas),      cf: 'roas', raw: agg.roas },
+    { label:'Outbound Clicks', val: fmtInt(agg.clicks),     cf: null         },
+    { label:'Adds to Cart',    val: fmtInt(agg.atc),        cf: null         },
+    { label:'Checkouts',       val: fmtInt(agg.checkouts),  cf: null         },
+    { label:'Results',         val: fmtInt(agg.results),    cf: null         },
+    { label:'Conv. Value',     val: fmtCur(agg.conv_value), cf: null         },
+  ];
+  var html = '';
+  cards.forEach(function(c) {
+    var valHtml = c.val;
+    if (c.cf && c.raw !== null && c.raw !== undefined) {
+      var cls = cfClass(c.cf, c.raw);
+      if (cls) {
+        var cmap = {'cf-green':'var(--green)','cf-amber':'var(--amber)','cf-red':'var(--red)'};
+        valHtml = '<span style="color:' + (cmap[cls]||'inherit') + '">' + c.val + '</span>';
+      }
+    }
+    html += '<div class="scard"><div class="scard-label">' + c.label + '</div><div class="scard-value">' + valHtml + '</div></div>';
+  });
+  document.getElementById('summary-bar').innerHTML = html;
+}
+
+/* ── Filter chip ─────────────────────────────────────────────────────── */
+function renderFilterChip() {
+  var bar  = document.getElementById('filter-bar');
+  var chip = document.getElementById('filter-chip-label');
+  if (filterCampaign && filterAdset) {
+    chip.innerHTML = 'Ad Set: <strong>' + esc(filterAdset) + '</strong>';
+    bar.classList.remove('hidden');
+  } else if (filterCampaign) {
+    chip.innerHTML = 'Campaign: <strong>' + esc(filterCampaign) + '</strong>';
+    bar.classList.remove('hidden');
+  } else {
+    bar.classList.add('hidden');
+  }
+}
+
+/* ── Tab rendering ───────────────────────────────────────────────────── */
+function renderCurrentTab() {
+  renderFilterChip();
+  var area = document.getElementById('table-area');
+  var ss   = sortState[currentTab];
+
+  if (currentTab === 'campaigns') {
+    var rows = sortRows(buildCampaignRows(), ss.key, ss.dir);
+    area.innerHTML = '<div class="table-card">' +
+      '<div class="table-toolbar"><span class="toolbar-title">Campaigns</span>' +
+      '<span class="toolbar-count">' + rows.length + '</span>' +
+      '<span class="toolbar-hint">Click a row to drill down</span></div>' +
+      buildTable(CAMPAIGN_COLS, rows, 'campaigns', {drilldown:'campaign'}) + '</div>';
+
+  } else if (currentTab === 'adsets') {
+    var rows = sortRows(buildAdsetRows(filterCampaign), ss.key, ss.dir);
+    var title = filterCampaign ? 'Ad Sets — ' + filterCampaign : 'Ad Sets';
+    area.innerHTML = '<div class="table-card">' +
+      '<div class="table-toolbar"><span class="toolbar-title">' + esc(title) + '</span>' +
+      '<span class="toolbar-count">' + rows.length + '</span>' +
+      '<span class="toolbar-hint">Click a row to drill down</span></div>' +
+      buildTable(ADSET_COLS, rows, 'adsets', {drilldown:'adset'}) + '</div>';
+
+  } else if (currentTab === 'ads') {
+    var rows = sortRows(buildAdsRows(filterCampaign, filterAdset), ss.key, ss.dir);
+    var title = filterAdset ? 'Ads — ' + filterAdset : (filterCampaign ? 'Ads — ' + filterCampaign : 'Ads');
+    area.innerHTML = '<div class="table-card">' +
+      '<div class="table-toolbar"><span class="toolbar-title">' + esc(title) + '</span>' +
+      '<span class="toolbar-count">' + rows.length + '</span></div>' +
+      buildTable(ADS_COLS, rows, 'ads', {}) + '</div>';
+
+  } else if (currentTab === 'creatives') {
+    var rows = sortRows(buildCreativeRows(), ss.key, ss.dir);
+    area.innerHTML = '<div class="table-card">' +
+      '<div class="table-toolbar"><span class="toolbar-title">Creatives</span>' +
+      '<span class="toolbar-count">' + rows.length + '</span>' +
+      '<span class="toolbar-hint">Grouped by Ad Name · click row to preview</span></div>' +
+      buildTable(CREATIVES_COLS, rows, 'creatives', {modal:'ad'}) + '</div>';
+  }
+}
+
+/* ── CF panel ─────────────────────────────────────────────────────────── */
+function openCFPanel() {
+  document.getElementById('cf-cpm-lo').value    = CF.cpm.lo;
+  document.getElementById('cf-cpm-hi').value    = CF.cpm.hi;
+  document.getElementById('cf-ctr-lo').value    = CF.ctr.lo;
+  document.getElementById('cf-ctr-hi').value    = CF.ctr.hi;
+  document.getElementById('cf-cpc-lo').value    = CF.cpc.lo;
+  document.getElementById('cf-cpc-hi').value    = CF.cpc.hi;
+  document.getElementById('cf-roas-be').value   = CF.roas.breakEven;
+  document.getElementById('cf-roas-green').value= (CF.roas.breakEven + CF.roas.greenOffset).toFixed(2);
+  document.getElementById('cf-panel').classList.remove('hidden');
+}
+function applyCF() {
+  CF.cpm.lo  = parseFloat(document.getElementById('cf-cpm-lo').value)  || CF_DEFAULTS.cpm.lo;
+  CF.cpm.hi  = parseFloat(document.getElementById('cf-cpm-hi').value)  || CF_DEFAULTS.cpm.hi;
+  CF.ctr.lo  = parseFloat(document.getElementById('cf-ctr-lo').value)  || CF_DEFAULTS.ctr.lo;
+  CF.ctr.hi  = parseFloat(document.getElementById('cf-ctr-hi').value)  || CF_DEFAULTS.ctr.hi;
+  CF.cpc.lo  = parseFloat(document.getElementById('cf-cpc-lo').value)  || CF_DEFAULTS.cpc.lo;
+  CF.cpc.hi  = parseFloat(document.getElementById('cf-cpc-hi').value)  || CF_DEFAULTS.cpc.hi;
+  var be     = parseFloat(document.getElementById('cf-roas-be').value)    || CF_DEFAULTS.roas.breakEven;
+  var green  = parseFloat(document.getElementById('cf-roas-green').value) || (CF_DEFAULTS.roas.breakEven + CF_DEFAULTS.roas.greenOffset);
+  CF.roas.breakEven   = be;
+  CF.roas.greenOffset = Math.max(0, green - be);
+  document.getElementById('cf-panel').classList.add('hidden');
+  renderSummary();
+  renderCurrentTab();
+}
+function resetCF() {
+  CF.cpm  = { lo: CF_DEFAULTS.cpm.lo,  hi: CF_DEFAULTS.cpm.hi,  lowerIsBetter: true  };
+  CF.ctr  = { lo: CF_DEFAULTS.ctr.lo,  hi: CF_DEFAULTS.ctr.hi,  lowerIsBetter: false };
+  CF.cpc  = { lo: CF_DEFAULTS.cpc.lo,  hi: CF_DEFAULTS.cpc.hi,  lowerIsBetter: true  };
+  CF.roas = { breakEven: CF_DEFAULTS.roas.breakEven, greenOffset: CF_DEFAULTS.roas.greenOffset };
+  openCFPanel();
+  renderSummary();
+  renderCurrentTab();
+}
+
+/* ── Modal ───────────────────────────────────────────────────────────── */
+function openModal(adName, adsetName) {
+  var url = CREATIVE_IMAGES[adName];
+  if (!url) return;
+  document.getElementById('modal-img').src = url;
+  document.getElementById('modal-ad-name').textContent = adName;
+  document.getElementById('modal-adset').textContent   = adsetName ? 'Ad Set: ' + adsetName : '';
+  document.getElementById('modal').classList.remove('hidden');
+}
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+  document.getElementById('modal-img').src = '';
+}
+
+/* ── Event delegation ─────────────────────────────────────────────────── */
+document.addEventListener('click', function(e) {
+  var tabBtn = e.target.closest('[data-tab]');
+  if (tabBtn && tabBtn.classList.contains('tab-btn')) {
+    currentTab = tabBtn.dataset.tab;
+    filterCampaign = null; filterAdset = null;
+    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+    tabBtn.classList.add('active');
+    renderCurrentTab(); return;
+  }
+  var th = e.target.closest('[data-sortkey]');
+  if (th) {
+    var tab = th.dataset.sorttab, key = th.dataset.sortkey, ss = sortState[tab];
+    if (ss.key === key) ss.dir = -ss.dir; else { ss.key = key; ss.dir = -1; }
+    renderCurrentTab(); return;
+  }
+  var thumbCell = e.target.closest('[data-modal]');
+  if (thumbCell) { openModal(thumbCell.dataset.modal, thumbCell.dataset.adset || ''); return; }
+  var drillRow = e.target.closest('[data-drill]');
+  if (drillRow && !e.target.closest('[data-modal]')) {
+    var drill = drillRow.dataset.drill, camp = drillRow.dataset.camp || null, adset = drillRow.dataset.adset || null;
+    if (drill === 'adsets') { filterCampaign = camp; filterAdset = null; currentTab = 'adsets'; }
+    else if (drill === 'ads') { filterCampaign = camp; filterAdset = adset; currentTab = 'ads'; }
+    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.tab === currentTab); });
+    renderCurrentTab(); return;
+  }
+  if (e.target.id === 'clear-filter')  { filterCampaign = null; filterAdset = null; renderCurrentTab(); return; }
+  if (e.target.id === 'cf-btn')        { openCFPanel(); return; }
+  if (e.target.id === 'cf-close-btn')  { document.getElementById('cf-panel').classList.add('hidden'); return; }
+  if (e.target.id === 'cf-apply-btn')  { applyCF(); return; }
+  if (e.target.id === 'cf-reset-btn')  { resetCF(); return; }
+  if (e.target.id === 'modal-close-btn' || e.target.id === 'modal') { closeModal(); return; }
+  if (e.target.classList.contains('modal-overlay')) { closeModal(); return; }
+});
+
+/* ── Init ─────────────────────────────────────────────────────────────── */
+try {
+  renderSummary();
+  renderCurrentTab();
+} catch(err) {
+  var area = document.getElementById('table-area');
+  if (area) area.innerHTML =
+    '<div style="padding:32px;color:#c0392b;font-family:monospace;font-size:13px;white-space:pre-wrap">' +
+    'Dashboard error — please regenerate.\n\n' + (err.stack || err.message) + '</div>';
+  throw err;
+}
+</script>
+</body>
+</html>
