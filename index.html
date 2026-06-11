@@ -15,6 +15,22 @@
   --row-even:#f7f8fb;--row-hover:#e8f0fe;
 }
 html,body{height:100%;font-family:'Open Sans',sans-serif;font-size:15px;color:var(--text);background:var(--bg);line-height:1.5}
+/* ── Lock screen ─────────────────────────────────────────────────────── */
+#lock-screen{position:fixed;inset:0;z-index:9999;background:#1c1e21;display:flex;align-items:center;justify-content:center}
+#lock-screen.hidden{display:none}
+.lock-card{background:#fff;border-radius:14px;padding:40px 44px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.lock-logo{font-size:28px;font-weight:700;color:#1c1e21;margin-bottom:4px;letter-spacing:-.3px}
+.lock-sub{font-size:13px;color:#65676b;margin-bottom:28px}
+.lock-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9a9da3;text-align:left;margin-bottom:6px}
+.lock-wrap{border:1.5px solid #dde0e6;border-radius:8px;overflow:hidden;margin-bottom:14px;transition:border-color .15s}
+.lock-wrap:focus-within{border-color:#1877f2}
+.lock-wrap.shake{animation:lk-shake .35s ease}
+.lock-wrap.err{border-color:#c0392b}
+@keyframes lk-shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+#lock-input{width:100%;border:none;outline:none;font-size:15px;font-family:'Open Sans',sans-serif;padding:11px 14px;color:#1c1e21;background:#fff}
+.lock-err{font-size:12px;color:#c0392b;min-height:16px;margin-bottom:12px;text-align:left}
+.lock-btn{width:100%;padding:12px;background:#1877f2;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;font-family:'Open Sans',sans-serif;cursor:pointer;transition:background .15s}
+.lock-btn:hover{background:#0d65d9}
 /* ── Header ───────────────────────────────────────────────────────────── */
 .app-header{position:sticky;top:0;z-index:200;background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;gap:12px}
 .app-title{font-size:17px;font-weight:600;color:var(--text);letter-spacing:-.2px;white-space:nowrap}
@@ -143,13 +159,25 @@ td.td-thumb:hover .thumb{border-color:var(--blue);cursor:pointer}
 </style>
 </head>
 <body>
+<div id="lock-screen">
+  <div class="lock-card">
+    <div class="lock-logo">Meta Ads Dashboard</div>
+    <div class="lock-sub">Enter password to continue</div>
+    <div class="lock-label">Password</div>
+    <div class="lock-wrap" id="lock-wrap">
+      <input id="lock-input" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div class="lock-err" id="lock-err"></div>
+    <button class="lock-btn" onclick="unlock()">Unlock</button>
+  </div>
+</div>
 <div id="app">
   <div class="app-header">
     <div class="app-title">Meta Ads Dashboard</div>
     <div class="app-divider"></div>
     <div class="date-range" id="date-range-el">30th May – 11th Jun 2026</div>
     <div class="app-divider"></div>
-    <div class="app-updated">Updated 11th of June at 7:06pm (NZST)</div>
+    <div class="app-updated">Updated 11th of June at 10:20pm (NZST)</div>
     <div class="header-actions">
       <button class="btn-cf" id="cf-btn">&#9881; Performance Colour Rules</button>
     </div>
@@ -322,7 +350,7 @@ var RAW = [
   {date_start:"2026-05-30",date_end:"2026-06-11",ad:"Static - Review",adset:"Reading - 1865/MF/ANZ",delivery:"not_delivering",cpm:34.203368,spend:52.81,ctr:3.173575,video_playtime:"00:00:00",clicks:49.0,atc:null,checkouts:null,cpc:1.077755,cost_atc:null,cost_checkout:null,cost_per_result:null,result_indicator:null,roas:null,results:null,conv_value:null,impressions:1544.0,reach:1294.0,frequency:1.193199,campaign:"[P] CBO - Cold Interest Targeting"}
 ];
 var CREATIVE_IMAGES = {"Static - Before & After": "https://cdn.shopify.com/s/files/1/1016/4224/0368/files/Before_After_v1.png?v=1780561086", "Static - Comparison": "https://cdn.shopify.com/s/files/1/1016/4224/0368/files/Comparison.png?v=1780561085", "Static - Review": "https://cdn.shopify.com/s/files/1/1016/4224/0368/files/Review_v2.png?v=1780561085", "Static - Offer": "https://cdn.shopify.com/s/files/1/1016/4224/0368/files/Offer_v1.png?v=1780561085", "Static - Features": "https://cdn.shopify.com/s/files/1/1016/4224/0368/files/Features.png?v=1780561084", "Before & After - Cats": "https://cdn.shopify.com/s/files/1/0822/8398/7158/files/Before_After_-_Cats.png?v=1780869596", "Before & After - Dining Table": "https://cdn.shopify.com/s/files/1/0822/8398/7158/files/Before_After_-_Dinning_Table.png?v=1780869597", "Before & After - Dogs": "https://cdn.shopify.com/s/files/1/0822/8398/7158/files/Before_After_-_Dogs.png?v=1780869597", "Before & After - Lost Pieces": "https://cdn.shopify.com/s/files/1/0822/8398/7158/files/Before_After_-_Lost_Pieces.png?v=1780869597", "Before & After - Moving House": "https://cdn.shopify.com/s/files/1/0822/8398/7158/files/Before_After_-_Moving.png?v=1780869596", "Retargeting - Before & After": "https://cdn.shopify.com/s/files/1/0822/8398/7158/files/Retargeting_-_Before_After.png?v=1781161210", "Retargeting - Review": "https://cdn.shopify.com/s/files/1/0822/8398/7158/files/Retargeting_-_Review.png?v=1781161211"};
-var UPDATED_UTC = "2026-06-11T07:06:02Z";
+var UPDATED_UTC = "2026-06-11T10:20:19Z";
 
 /* ── CF defaults ─────────────────────────────────────────────────────── */
 var CF_DEFAULTS = {
@@ -887,6 +915,35 @@ try {
     '<div style="padding:32px;color:#c0392b;font-family:monospace;font-size:13px;white-space:pre-wrap">' +
     'Dashboard error — please regenerate.\n\n' + (err.stack || err.message) + '</div>';
   throw err;
+}
+
+/* ── Lock screen ─────────────────────────────────────────────────────── */
+(function(){
+  if(sessionStorage.getItem('unlocked')==='1'){
+    document.getElementById('lock-screen').classList.add('hidden');
+  }
+  document.getElementById('lock-input').addEventListener('keydown',function(e){
+    if(e.key==='Enter') unlock();
+  });
+})();
+
+async function unlock(){
+  const val = document.getElementById('lock-input').value;
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val));
+  const hex = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(hex==='c67261c4d945e64f3ae93db0e455a92bad5c987fe1d8cfb72f73cfdf3ad0fe23'){
+    sessionStorage.setItem('unlocked','1');
+    document.getElementById('lock-screen').classList.add('hidden');
+  } else {
+    const wrap=document.getElementById('lock-wrap');
+    const err=document.getElementById('lock-err');
+    wrap.classList.remove('shake','err');
+    void wrap.offsetWidth;
+    wrap.classList.add('shake','err');
+    err.textContent='Incorrect password';
+    document.getElementById('lock-input').value='';
+    document.getElementById('lock-input').focus();
+  }
 }
 </script>
 </body>
